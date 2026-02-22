@@ -124,9 +124,14 @@ const LoginPage: React.FC = () => {
               </div>
               <div className="mt-4 p-3 rounded-xl bg-secondary/50 border border-border/40">
                 <p className="text-muted-foreground text-xs mb-2 flex items-center gap-1 font-medium"><Shield className="w-3 h-3" /> Demo Credentials</p>
-                <p className="text-foreground/70 text-xs">Admin: admin@company.com / Admin@123</p>
-                <p className="text-foreground/70 text-xs">Admin 2: vikram@company.com / Vikram@12</p>
-                <p className="text-foreground/70 text-xs">Employee: rajesh@company.com / Rajesh@123</p>
+                <p className="text-foreground/70 text-xs font-medium mb-1">Admins:</p>
+                <p className="text-foreground/70 text-xs">admin@company.com / Admin@123</p>
+                <p className="text-foreground/70 text-xs">vikram@company.com / Vikram@12</p>
+                <p className="text-foreground/70 text-xs font-medium mb-1 mt-1.5">Employees:</p>
+                <p className="text-foreground/70 text-xs">rajesh@company.com / Rajesh@123</p>
+                <p className="text-foreground/70 text-xs">priya@company.com / Priya@123</p>
+                <p className="text-foreground/70 text-xs">amit@company.com / Amit@1234</p>
+                <p className="text-foreground/70 text-xs">sneha@company.com / Sneha@123</p>
               </div>
             </form>
           ) : (
