@@ -17,7 +17,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [users, setUsers] = useState<User[]>(initialUsers);
 
   const login = useCallback((email: string, password: string) => {
-    const user = users.find(u => u.email === email);
+    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
     if (!user) return { success: false, message: 'User not found' };
     if (user.status === 'inactive') return { success: false, message: 'Account is deactivated. Contact admin.' };
     if (user.isFirstLogin) return { success: false, message: 'Please activate your account first using "First Time Login?"' };
@@ -31,7 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const activateAccount = useCallback((email: string, password: string) => {
-    const userIndex = users.findIndex(u => u.email === email);
+    const userIndex = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
     if (userIndex === -1) return { success: false, message: 'Email not found. Contact admin.' };
     const user = users[userIndex];
     if (!user.isFirstLogin) return { success: false, message: 'Account already activated. Please login.' };
