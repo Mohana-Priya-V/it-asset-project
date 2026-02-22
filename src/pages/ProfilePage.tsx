@@ -6,17 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { UserCircle, Save, Eye, EyeOff } from 'lucide-react';
+import { UserCircle, Save } from 'lucide-react';
 
 const ProfilePage: React.FC = () => {
   const { currentUser, setUsers } = useAuth();
   const { toast } = useToast();
   const [name, setName] = useState(currentUser?.name || '');
   const [phone, setPhone] = useState(currentUser?.phone || '');
-  const [currentPw, setCurrentPw] = useState('');
-  const [newPw, setNewPw] = useState('');
-  const [confirmPw, setConfirmPw] = useState('');
-  const [showPw, setShowPw] = useState(false);
 
   if (!currentUser) return null;
 
@@ -25,26 +21,6 @@ const ProfilePage: React.FC = () => {
     toast({ title: 'Profile Updated' });
   };
 
-  const handlePasswordChange = () => {
-    if (currentPw !== currentUser.password) {
-      toast({ title: 'Error', description: 'Current password is incorrect.', variant: 'destructive' }); return;
-    }
-    const errors: string[] = [];
-    if (newPw.length < 8) errors.push('Min 8 chars');
-    if (!/[A-Z]/.test(newPw)) errors.push('Uppercase');
-    if (!/[a-z]/.test(newPw)) errors.push('Lowercase');
-    if (!/[0-9]/.test(newPw)) errors.push('Number');
-    if (!/[!@#$%^&*]/.test(newPw)) errors.push('Special char');
-    if (errors.length) {
-      toast({ title: 'Weak Password', description: errors.join(', '), variant: 'destructive' }); return;
-    }
-    if (newPw !== confirmPw) {
-      toast({ title: 'Mismatch', description: 'Passwords do not match.', variant: 'destructive' }); return;
-    }
-    setUsers(prev => prev.map(u => u.id === currentUser.id ? { ...u, password: newPw } : u));
-    setCurrentPw(''); setNewPw(''); setConfirmPw('');
-    toast({ title: 'Password Changed' });
-  };
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -84,25 +60,6 @@ const ProfilePage: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Card className="glass-card border-0">
-        <CardHeader>
-          <CardTitle className="font-display text-lg">Change Password</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label>Current Password</Label>
-            <div className="relative">
-              <Input type={showPw ? 'text' : 'password'} value={currentPw} onChange={e => setCurrentPw(e.target.value)} />
-              <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-          <div><Label>New Password</Label><Input type="password" value={newPw} onChange={e => setNewPw(e.target.value)} /></div>
-          <div><Label>Confirm New Password</Label><Input type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} /></div>
-          <Button onClick={handlePasswordChange} variant="outline">Change Password</Button>
-        </CardContent>
-      </Card>
     </div>
   );
 };

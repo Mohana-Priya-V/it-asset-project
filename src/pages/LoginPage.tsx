@@ -131,6 +131,7 @@ const LoginPage: React.FC = () => {
               <div className="mt-4 p-3 rounded-lg bg-white/5 border border-white/10">
                 <p className="text-white/50 text-xs mb-1 flex items-center gap-1"><Shield className="w-3 h-3" /> Demo Credentials</p>
                 <p className="text-white/70 text-xs">Admin: admin@company.com / Admin@123</p>
+                <p className="text-white/70 text-xs">Admin 2: vikram@company.com / Vikram@12</p>
                 <p className="text-white/70 text-xs">Employee: rajesh@company.com / Rajesh@123</p>
               </div>
             </form>
