@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Monitor, Eye, EyeOff, Shield } from 'lucide-react';
+import { Monitor, Eye, EyeOff, Shield, ArrowLeft, CheckCircle2, Circle } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -35,8 +35,6 @@ const LoginPage: React.FC = () => {
     const result = login(email, password);
     if (result.success) {
       toast({ title: 'Welcome back!', description: result.message });
-      const user = JSON.parse(JSON.stringify(result));
-      // Navigate based on role from auth context
       navigate('/dashboard');
     } else {
       toast({ title: 'Login Failed', description: result.message, variant: 'destructive' });
@@ -69,101 +67,97 @@ const LoginPage: React.FC = () => {
   const pwErrors = passwordPolicy(newPassword);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Gradient background */}
-      <div className="absolute inset-0 gradient-bg opacity-90" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_hsl(262_83%_58%_/_0.3),_transparent_50%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_hsl(221_83%_53%_/_0.2),_transparent_50%)]" />
-
-      {/* Floating orbs */}
-      <div className="absolute top-20 left-20 w-72 h-72 bg-white/10 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-20 right-20 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      {/* Decorative blobs */}
+      <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full bg-primary/10 blur-3xl" />
+      <div className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] rounded-full bg-accent/10 blur-3xl" />
+      <div className="absolute top-[30%] right-[10%] w-[300px] h-[300px] rounded-full bg-info/8 blur-3xl" />
 
       <div className="relative z-10 w-full max-w-md">
-        {/* Logo */}
+        {/* Logo & branding */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-xl mb-4">
-            <Monitor className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl gradient-bg shadow-lg shadow-primary/25 mb-4">
+            <Monitor className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-display font-bold text-white">IT Asset Manager</h1>
-          <p className="text-white/70 mt-2">Manage your IT infrastructure efficiently</p>
+          <h1 className="text-3xl font-display font-bold text-foreground">IT Asset Manager</h1>
+          <p className="text-muted-foreground mt-2">Manage your IT infrastructure efficiently</p>
         </div>
 
-        {/* Glass card */}
-        <div className="glass-card p-8 bg-white/10 border-white/20">
+        {/* Card */}
+        <div className="rounded-2xl border border-border/60 bg-card backdrop-blur-xl shadow-xl shadow-primary/5 p-8">
           {!isFirstTime ? (
             <form onSubmit={handleLogin} className="space-y-5">
               <div className="space-y-2">
-                <Label className="text-white/90">Email</Label>
+                <Label className="text-foreground font-medium">Email</Label>
                 <Input
                   type="email"
                   placeholder="admin@company.com"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                  className="h-11 bg-secondary/50 border-border/50 focus:border-primary/50 focus:ring-primary/20"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-white/90">Password</Label>
+                <Label className="text-foreground font-medium">Password</Label>
                 <div className="relative">
                   <Input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-white/40 pr-10 focus:border-white/40"
+                    className="h-11 bg-secondary/50 border-border/50 pr-10 focus:border-primary/50 focus:ring-primary/20"
                     required
                   />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80">
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
-              <Button type="submit" className="w-full bg-white text-primary hover:bg-white/90 font-semibold h-11">
+              <Button type="submit" className="w-full gradient-bg border-0 text-primary-foreground font-semibold h-11 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all">
                 Sign In
               </Button>
               <div className="text-center">
-                <button type="button" onClick={() => setIsFirstTime(true)} className="text-white/70 hover:text-white text-sm underline underline-offset-4">
+                <button type="button" onClick={() => setIsFirstTime(true)} className="text-primary hover:text-primary/80 text-sm font-medium underline underline-offset-4 transition-colors">
                   First Time Login?
                 </button>
               </div>
-              <div className="mt-4 p-3 rounded-lg bg-white/5 border border-white/10">
-                <p className="text-white/50 text-xs mb-1 flex items-center gap-1"><Shield className="w-3 h-3" /> Demo Credentials</p>
-                <p className="text-white/70 text-xs">Admin: admin@company.com / Admin@123</p>
-                <p className="text-white/70 text-xs">Admin 2: vikram@company.com / Vikram@12</p>
-                <p className="text-white/70 text-xs">Employee: rajesh@company.com / Rajesh@123</p>
+              <div className="mt-4 p-3 rounded-xl bg-secondary/50 border border-border/40">
+                <p className="text-muted-foreground text-xs mb-2 flex items-center gap-1 font-medium"><Shield className="w-3 h-3" /> Demo Credentials</p>
+                <p className="text-foreground/70 text-xs">Admin: admin@company.com / Admin@123</p>
+                <p className="text-foreground/70 text-xs">Admin 2: vikram@company.com / Vikram@12</p>
+                <p className="text-foreground/70 text-xs">Employee: rajesh@company.com / Rajesh@123</p>
               </div>
             </form>
           ) : (
             <form onSubmit={handleActivation} className="space-y-5">
               <div className="text-center mb-2">
-                <h2 className="text-xl font-display font-semibold text-white">Activate Account</h2>
-                <p className="text-white/60 text-sm mt-1">Set your password for the first time</p>
+                <h2 className="text-xl font-display font-semibold text-foreground">Activate Account</h2>
+                <p className="text-muted-foreground text-sm mt-1">Set your password for the first time</p>
               </div>
               <div className="space-y-2">
-                <Label className="text-white/90">Registered Email</Label>
+                <Label className="text-foreground font-medium">Registered Email</Label>
                 <Input
                   type="email"
                   placeholder="your.email@company.com"
                   value={activationEmail}
                   onChange={e => setActivationEmail(e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
+                  className="h-11 bg-secondary/50 border-border/50 focus:border-primary/50"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-white/90">Set Password</Label>
+                <Label className="text-foreground font-medium">Set Password</Label>
                 <div className="relative">
                   <Input
                     type={showNewPassword ? 'text' : 'password'}
                     placeholder="Create a strong password"
                     value={newPassword}
                     onChange={e => setNewPassword(e.target.value)}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-white/40 pr-10"
+                    className="h-11 bg-secondary/50 border-border/50 pr-10 focus:border-primary/50"
                     required
                   />
-                  <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80">
+                  <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                     {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
@@ -172,8 +166,8 @@ const LoginPage: React.FC = () => {
                     {['Min 8 characters', 'Uppercase letter', 'Lowercase letter', 'Number', 'Special character (!@#$%^&*)'].map(rule => {
                       const pass = !pwErrors.includes(rule);
                       return (
-                        <p key={rule} className={`text-xs flex items-center gap-1 ${pass ? 'text-green-400' : 'text-white/40'}`}>
-                          {pass ? '✓' : '○'} {rule}
+                        <p key={rule} className={`text-xs flex items-center gap-1.5 ${pass ? 'text-success' : 'text-muted-foreground'}`}>
+                          {pass ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />} {rule}
                         </p>
                       );
                     })}
@@ -181,25 +175,25 @@ const LoginPage: React.FC = () => {
                 )}
               </div>
               <div className="space-y-2">
-                <Label className="text-white/90">Confirm Password</Label>
+                <Label className="text-foreground font-medium">Confirm Password</Label>
                 <Input
                   type="password"
                   placeholder="Confirm your password"
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
+                  className="h-11 bg-secondary/50 border-border/50 focus:border-primary/50"
                   required
                 />
                 {confirmPassword && newPassword !== confirmPassword && (
-                  <p className="text-xs text-red-400">Passwords do not match</p>
+                  <p className="text-xs text-destructive flex items-center gap-1">Passwords do not match</p>
                 )}
               </div>
-              <Button type="submit" className="w-full bg-white text-primary hover:bg-white/90 font-semibold h-11">
+              <Button type="submit" className="w-full gradient-bg border-0 text-primary-foreground font-semibold h-11 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all">
                 Activate Account
               </Button>
               <div className="text-center">
-                <button type="button" onClick={() => setIsFirstTime(false)} className="text-white/70 hover:text-white text-sm underline underline-offset-4">
-                  ← Back to Login
+                <button type="button" onClick={() => setIsFirstTime(false)} className="text-primary hover:text-primary/80 text-sm font-medium inline-flex items-center gap-1 transition-colors">
+                  <ArrowLeft className="w-3.5 h-3.5" /> Back to Login
                 </button>
               </div>
             </form>
