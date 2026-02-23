@@ -1,78 +1,106 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useData } from '@/context/DataContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, Monitor, Building2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Users, Monitor, Building2, ChevronRight, ArrowLeft } from 'lucide-react';
 
 const DepartmentView: React.FC = () => {
   const { users } = useAuth();
-  const { assets, departments, assignments, repairRequests } = useData();
+  const { assets, departments, assignments } = useData();
+  const [selectedDept, setSelectedDept] = useState<string | null>(null);
+
+  if (selectedDept) {
+    const deptUsers = users.filter(u => u.department === selectedDept);
+    const deptAssets = assets.filter(a => a.department === selectedDept);
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => setSelectedDept(null)}>
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-display font-bold">{selectedDept}</h1>
+            <p className="text-muted-foreground">{deptUsers.length} employees · {deptAssets.length} assets</p>
+          </div>
+        </div>
+
+        <Card className="glass-card border-0">
+          <CardHeader>
+            <CardTitle className="font-display text-lg flex items-center gap-2">
+              <Users className="w-5 h-5" /> Employees
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {deptUsers.length === 0 && <p className="text-muted-foreground text-sm">No employees in this department.</p>}
+            {deptUsers.map(u => (
+              <div key={u.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted/30">
+                <div className="w-10 h-10 rounded-full gradient-bg flex items-center justify-center text-white font-semibold">{u.name.charAt(0)}</div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">{u.name}</p>
+                  <p className="text-xs text-muted-foreground">{u.email}</p>
+                </div>
+                <Badge variant="secondary" className="capitalize">{u.role}</Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card border-0">
+          <CardHeader>
+            <CardTitle className="font-display text-lg flex items-center gap-2">
+              <Monitor className="w-5 h-5" /> Assigned Assets
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {deptAssets.length === 0 && <p className="text-muted-foreground text-sm">No assets assigned to this department.</p>}
+            {deptAssets.map(a => (
+              <div key={a.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
+                <div>
+                  <p className="font-medium">{a.name}</p>
+                  <p className="text-xs text-muted-foreground font-mono">{a.serialNumber}</p>
+                </div>
+                <Badge variant="secondary" className="capitalize">{a.status.replace('_', ' ')}</Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-display font-bold">Departments</h1>
-        <p className="text-muted-foreground">Overview of departments, employees, and assets</p>
+        <p className="text-muted-foreground">View departments, employees, and assigned assets</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {departments.map(dept => {
           const deptUsers = users.filter(u => u.department === dept.name && u.status === 'active');
           const deptAssets = assets.filter(a => a.department === dept.name);
-          const deptIssues = repairRequests.filter(r => {
-            const asset = assets.find(a => a.id === r.assetId);
-            return asset?.department === dept.name && (r.status === 'pending' || r.status === 'in_progress');
-          });
 
           return (
-            <Card key={dept.id} className="glass-card border-0 hover:shadow-xl transition-shadow">
-              <CardHeader className="pb-3">
-                <CardTitle className="font-display text-lg flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-white" />
+            <Card
+              key={dept.id}
+              className="glass-card border-0 hover:shadow-xl transition-shadow cursor-pointer"
+              onClick={() => setSelectedDept(dept.name)}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Building2 className="w-6 h-6 text-primary" />
                   </div>
-                  {dept.name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">Employees</span>
-                  </div>
-                  <Badge variant="secondary" className="font-mono">{deptUsers.length}</Badge>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                  <div className="flex items-center gap-2">
-                    <Monitor className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">Assets</span>
-                  </div>
-                  <Badge variant="secondary" className="font-mono">{deptAssets.length}</Badge>
+                <h3 className="font-display font-bold text-lg mb-2">{dept.name}</h3>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1"><Users className="w-4 h-4" /> {deptUsers.length} employees</span>
+                  <span className="flex items-center gap-1"><Monitor className="w-4 h-4" /> {deptAssets.length} assets</span>
                 </div>
-                {deptIssues.length > 0 && (
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-warning/10">
-                    <span className="text-sm text-warning">Open Issues</span>
-                    <Badge className="status-pending font-mono">{deptIssues.length}</Badge>
-                  </div>
-                )}
-
-                {/* Employee list */}
-                {deptUsers.length > 0 && (
-                  <div className="pt-2 border-t border-border/50">
-                    <p className="text-xs text-muted-foreground mb-2">Team Members</p>
-                    <div className="space-y-1">
-                      {deptUsers.slice(0, 5).map(u => (
-                        <div key={u.id} className="flex items-center gap-2 text-sm">
-                          <div className="w-6 h-6 rounded-full gradient-bg flex items-center justify-center text-white text-xs font-semibold">{u.name.charAt(0)}</div>
-                          <span className="truncate">{u.name}</span>
-                          <Badge variant="secondary" className="text-xs capitalize ml-auto">{u.role}</Badge>
-                        </div>
-                      ))}
-                      {deptUsers.length > 5 && <p className="text-xs text-muted-foreground">+{deptUsers.length - 5} more</p>}
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
           );
