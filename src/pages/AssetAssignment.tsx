@@ -13,15 +13,17 @@ import { ArrowLeftRight, Undo2, Plus, Clock } from 'lucide-react';
 
 const AssetAssignment: React.FC = () => {
   const { users, currentUser } = useAuth();
-  const { assets, setAssets, assignments, setAssignments, assignmentHistory, setAssignmentHistory } = useData();
+  const { assets, setAssets, assignments, setAssignments, assignmentHistory, setAssignmentHistory, departments } = useData();
   const { toast } = useToast();
   const [showAssign, setShowAssign] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState('');
   const [selectedUser, setSelectedUser] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState('');
 
   const activeAssignments = assignments.filter(a => !a.returnDate);
   const availableAssets = assets.filter(a => a.status === 'available');
-  const employees = users.filter(u => u.role === 'employee' && u.status === 'active');
+  const allEmployees = users.filter(u => u.role === 'employee' && u.status === 'active');
+  const employees = selectedDepartment ? allEmployees.filter(u => u.department === selectedDepartment) : allEmployees;
 
   const handleAssign = () => {
     if (!selectedAsset || !selectedUser || !currentUser) return;
@@ -33,6 +35,7 @@ const AssetAssignment: React.FC = () => {
     setShowAssign(false);
     setSelectedAsset('');
     setSelectedUser('');
+    setSelectedDepartment('');
     toast({ title: 'Asset Assigned', description: 'Asset has been assigned successfully.' });
   };
 
@@ -142,6 +145,14 @@ const AssetAssignment: React.FC = () => {
               <Select value={selectedAsset} onValueChange={setSelectedAsset}>
                 <SelectTrigger><SelectValue placeholder="Select asset" /></SelectTrigger>
                 <SelectContent>{availableAssets.map(a => <SelectItem key={a.id} value={a.id}>{a.name} ({a.serialNumber})</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><Label>Department</Label>
+              <Select value={selectedDepartment} onValueChange={(val) => { setSelectedDepartment(val); setSelectedUser(''); }}>
+                <SelectTrigger><SelectValue placeholder="All departments" /></SelectTrigger>
+                <SelectContent>
+                  {departments.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
+                </SelectContent>
               </Select>
             </div>
             <div><Label>Employee *</Label>
