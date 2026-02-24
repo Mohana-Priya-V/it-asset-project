@@ -54,11 +54,21 @@ npm run dev
 
 This project is built with:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+
+## Repository layout after reorganization
+
+- `client/`: frontend React app (Vite + TypeScript + Tailwind). Run `npm install` and `npm run dev` inside `client/` after moving files.
+- `server/`: Flask backend scaffold (connects to MySQL). See `server/README.md` for setup.
+- `scripts/move-frontend.ps1`: PowerShell helper to move frontend files into `client/` using `git mv`.
+
+To perform the move automatically (recommended), run the PowerShell script from the repo root in a Git-enabled environment:
+
+```powershell
+.
+scripts\move-frontend.ps1
+```
+
+After moving, review changes and commit them.
 
 ## How can I deploy this project?
 
