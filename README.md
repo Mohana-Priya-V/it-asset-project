@@ -70,6 +70,22 @@ scripts\move-frontend.ps1
 
 After moving, review changes and commit them.
 
+## Data Persistence & Backend Integration
+
+The application now features full database persistence via MySQL:
+
+- **Backend (Flask + SQLAlchemy)**: Automatically commits all create/update operations to MySQL with `engine.begin()` context manager
+- **Frontend (React + Contexts)**: Fetches data from backend on mount, ensuring previously created records are restored
+- **Sync Flow**: When creating data → API call → MySQL insert → local state update → persistent storage
+
+When users are created in `UserManagement` or assets in `AssetManagement`:
+1. Data is sent to `/api/users`, `/api/assets`, etc.
+2. Backend saves to MySQL and returns the ID
+3. Frontend updates local state
+4. On reload: Contexts automatically fetch from backend, previously created records appear
+
+No more data loss on restart or session termination.
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.

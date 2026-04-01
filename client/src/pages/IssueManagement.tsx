@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { AlertTriangle, Search, MessageSquare } from 'lucide-react';
 import { IssueStatus } from '@/data/mockData';
+import { issuesApi } from '@/services/api';
 
 const statusColors: Record<string, string> = {
   pending: 'status-pending',
@@ -56,11 +57,24 @@ const IssueManagement: React.FC = () => {
     setShowRemarks(true);
   };
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (!selectedReq) return;
-    setRepairRequests(prev => prev.map(r => r.id === selectedReq.id ? { ...r, status: newStatus, adminRemarks: remarks, updatedAt: new Date().toISOString().split('T')[0] } : r));
-    setShowRemarks(false);
-    toast({ title: 'Issue Updated', description: `Status changed to ${newStatus.replace('_', ' ')}` });
+    try {
+      const updated = await issuesApi.update(selectedReq.id, {
+        status: newStatus,
+        adminRemarks: remarks,
+      });
+      setRepairRequests(prev => prev.map(r => r.id === selectedReq.id ? updated : r));
+      setShowRemarks(false);
+      toast({ title: 'Issue Updated', description: `Status changed to ${newStatus.replace('_', ' ')}` });
+    } catch (err: any) {
+      console.error('[IssueManagement] Failed to update issue:', err);
+      toast({
+        title: 'Update Failed',
+        description: err?.detail || err?.message || 'Could not update issue',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -123,7 +137,13 @@ const IssueManagement: React.FC = () => {
                   <TableRow key={req.id}>
                     <TableCell className="font-medium">{asset?.name || 'Unknown'}</TableCell>
                     <TableCell>{user?.name || 'Unknown'}<br /><span className="text-xs text-muted-foreground">{user?.department}</span></TableCell>
-                    <TableCell className="max-w-[200px] truncate text-sm">{req.description}</TableCell>
+                    <TableCell 
+  className="max-w-[250px] truncate text-sm"
+  title={req.description}
+>
+  {req.description}
+</TableCell>
+
                     <TableCell><Badge className={`${priorityColors[req.priority]} text-xs capitalize`}>{req.priority}</Badge></TableCell>
                     <TableCell><Badge className={`${statusColors[req.status]} text-xs capitalize`}>{req.status.replace('_', ' ')}</Badge></TableCell>
                     <TableCell className="text-sm">{req.createdAt}</TableCell>

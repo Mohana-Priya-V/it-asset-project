@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Monitor, Eye, EyeOff, Shield, ArrowLeft, CheckCircle2, Circle } from 'lucide-react';
+import { Monitor, Eye, EyeOff, Shield, ArrowLeft, CheckCircle2, Circle, Loader2 } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -16,6 +16,7 @@ const LoginPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [activationEmail, setActivationEmail] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { login, activateAccount } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -30,18 +31,25 @@ const LoginPage: React.FC = () => {
     return errors;
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = login(email, password);
-    if (result.success) {
-      toast({ title: 'Welcome back!', description: result.message });
-      navigate('/dashboard');
-    } else {
-      toast({ title: 'Login Failed', description: result.message, variant: 'destructive' });
+    setLoading(true);
+    try {
+      const result = await login(email, password);
+      if (result.success) {
+        toast({ title: 'Welcome back!', description: result.message });
+        navigate('/dashboard');
+      } else {
+        toast({ title: 'Login Failed', description: result.message, variant: 'destructive' });
+      }
+    } catch (error) {
+      toast({ title: 'Login Error', description: 'An error occurred during login', variant: 'destructive' });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleActivation = (e: React.FormEvent) => {
+  const handleActivation = async (e: React.FormEvent) => {
     e.preventDefault();
     const errors = passwordPolicy(newPassword);
     if (errors.length > 0) {
@@ -52,15 +60,22 @@ const LoginPage: React.FC = () => {
       toast({ title: 'Mismatch', description: 'Passwords do not match', variant: 'destructive' });
       return;
     }
-    const result = activateAccount(activationEmail, newPassword);
-    if (result.success) {
-      toast({ title: 'Success!', description: result.message });
-      setIsFirstTime(false);
-      setActivationEmail('');
-      setNewPassword('');
-      setConfirmPassword('');
-    } else {
-      toast({ title: 'Activation Failed', description: result.message, variant: 'destructive' });
+    setLoading(true);
+    try {
+      const result = await activateAccount(activationEmail, newPassword);
+      if (result.success) {
+        toast({ title: 'Success!', description: result.message });
+        setIsFirstTime(false);
+        setActivationEmail('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        toast({ title: 'Activation Failed', description: result.message, variant: 'destructive' });
+      }
+    } catch (error) {
+      toast({ title: 'Activation Error', description: 'An error occurred during activation', variant: 'destructive' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -91,7 +106,7 @@ const LoginPage: React.FC = () => {
                 <Label className="text-foreground font-medium">Email</Label>
                 <Input
                   type="email"
-                  placeholder="admin@company.com"
+                  placeholder="Enter your email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   className="h-11 bg-secondary/50 border-border/50 focus:border-primary/50 focus:ring-primary/20"
@@ -114,17 +129,13 @@ const LoginPage: React.FC = () => {
                   </button>
                 </div>
               </div>
-              <Button type="submit" className="w-full gradient-bg border-0 text-primary-foreground font-semibold h-11 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all">
-                Sign In
+              <Button type="submit" disabled={loading} className="w-full gradient-bg border-0 text-primary-foreground font-semibold h-11 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all">
+                {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Signing in...</> : 'Sign In'}
               </Button>
               <div className="text-center">
                 <button type="button" onClick={() => setIsFirstTime(true)} className="text-primary hover:text-primary/80 text-sm font-medium underline underline-offset-4 transition-colors">
                   First Time Login?
                 </button>
-              </div>
-              <div className="mt-4 p-3 rounded-xl bg-secondary/50 border border-border/40">
-                <p className="text-muted-foreground text-xs mb-2 flex items-center gap-1 font-medium"><Shield className="w-3 h-3" /> Default Admin</p>
-                <p className="text-foreground/70 text-xs">admin@company.com / Admin@123</p>
               </div>
             </form>
           ) : (
@@ -186,8 +197,8 @@ const LoginPage: React.FC = () => {
                   <p className="text-xs text-destructive flex items-center gap-1">Passwords do not match</p>
                 )}
               </div>
-              <Button type="submit" className="w-full gradient-bg border-0 text-primary-foreground font-semibold h-11 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all">
-                Activate Account
+              <Button type="submit" disabled={loading} className="w-full gradient-bg border-0 text-primary-foreground font-semibold h-11 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all">
+                {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Activating...</> : 'Activate Account'}
               </Button>
               <div className="text-center">
                 <button type="button" onClick={() => setIsFirstTime(false)} className="text-primary hover:text-primary/80 text-sm font-medium inline-flex items-center gap-1 transition-colors">

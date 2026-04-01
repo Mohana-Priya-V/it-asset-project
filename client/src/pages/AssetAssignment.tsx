@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeftRight, Undo2, Plus, Clock } from 'lucide-react';
+import { assignmentsApi } from '@/services/api';
 
 const AssetAssignment: React.FC = () => {
   const { users, currentUser } = useAuth();
@@ -23,29 +24,74 @@ const AssetAssignment: React.FC = () => {
   const activeAssignments = assignments.filter(a => !a.returnDate);
   const availableAssets = assets.filter(a => a.status === 'available');
   const allEmployees = users.filter(u => u.role === 'employee' && u.status === 'active');
-  const employees = selectedDepartment ? allEmployees.filter(u => u.department === selectedDepartment) : allEmployees;
+  
+  // Filter employees by selected department
+  const employees = selectedDepartment 
+    ? allEmployees.filter(u => {
+        console.log(`[AssetAssignment] Filtering user: ${u.name}, dept=${u.department}, selected=${selectedDepartment}`);
+        return u.department && u.department === selectedDepartment;
+      })
+    : allEmployees;
 
-  const handleAssign = () => {
+  const handleAssign = async () => {
     if (!selectedAsset || !selectedUser || !currentUser) return;
     const now = new Date().toISOString().split('T')[0];
-    const newAssignment = { id: `assign-${Date.now()}`, assetId: selectedAsset, userId: selectedUser, assignedDate: now, returnDate: null, assignedBy: currentUser.id };
-    setAssignments(prev => [...prev, newAssignment]);
-    setAssets(prev => prev.map(a => a.id === selectedAsset ? { ...a, status: 'assigned' as const } : a));
-    setAssignmentHistory(prev => [...prev, { id: `hist-${Date.now()}`, assetId: selectedAsset, userId: selectedUser, assignedDate: now, returnDate: null, action: 'assigned', performedBy: currentUser.id, timestamp: new Date().toISOString() }]);
-    setShowAssign(false);
-    setSelectedAsset('');
-    setSelectedUser('');
-    setSelectedDepartment('');
-    toast({ title: 'Asset Assigned', description: 'Asset has been assigned successfully.' });
+    
+    try {
+      // Call API to save assignment to database
+      const result = await assignmentsApi.assign({
+        assetId: selectedAsset,
+        userId: selectedUser,
+        assignedBy: currentUser.id,
+        notes: ''
+      });
+      
+      const newAssignment = { 
+        id: String(result.id), 
+        assetId: selectedAsset, 
+        userId: selectedUser, 
+        assignedDate: now, 
+        returnDate: null, 
+        assignedBy: currentUser.id 
+      };
+      setAssignments(prev => [...prev, newAssignment]);
+      setAssets(prev => prev.map(a => a.id === selectedAsset ? { ...a, status: 'assigned' as const } : a));
+      setAssignmentHistory(prev => [...prev, { id: `hist-${Date.now()}`, assetId: selectedAsset, userId: selectedUser, assignedDate: now, returnDate: null, action: 'assigned', performedBy: currentUser.id, timestamp: new Date().toISOString() }]);
+      setShowAssign(false);
+      setSelectedAsset('');
+      setSelectedUser('');
+      setSelectedDepartment('');
+      toast({ title: 'Asset Assigned', description: 'Asset has been assigned successfully.' });
+    } catch (err: any) {
+      console.error('[AssetAssignment] Assignment failed:', err);
+      toast({ 
+        title: 'Assignment Failed', 
+        description: err?.detail || err?.message || 'Could not assign asset',
+        variant: 'destructive'
+      });
+    }
   };
 
-  const handleReturn = (assignment: typeof assignments[0]) => {
+  const handleReturn = async (assignment: typeof assignments[0]) => {
     if (!currentUser) return;
     const now = new Date().toISOString().split('T')[0];
-    setAssignments(prev => prev.map(a => a.id === assignment.id ? { ...a, returnDate: now } : a));
-    setAssets(prev => prev.map(a => a.id === assignment.assetId ? { ...a, status: 'available' as const } : a));
-    setAssignmentHistory(prev => [...prev, { id: `hist-${Date.now()}`, assetId: assignment.assetId, userId: assignment.userId, assignedDate: assignment.assignedDate, returnDate: now, action: 'returned', performedBy: currentUser.id, timestamp: new Date().toISOString() }]);
-    toast({ title: 'Asset Returned' });
+    
+    try {
+      // Call API to save return to database
+      await assignmentsApi.returnAsset(assignment.id, currentUser.id);
+      
+      setAssignments(prev => prev.map(a => a.id === assignment.id ? { ...a, returnDate: now } : a));
+      setAssets(prev => prev.map(a => a.id === assignment.assetId ? { ...a, status: 'available' as const } : a));
+      setAssignmentHistory(prev => [...prev, { id: `hist-${Date.now()}`, assetId: assignment.assetId, userId: assignment.userId, assignedDate: assignment.assignedDate, returnDate: now, action: 'returned', performedBy: currentUser.id, timestamp: new Date().toISOString() }]);
+      toast({ title: 'Asset Returned' });
+    } catch (err: any) {
+      console.error('[AssetAssignment] Return failed:', err);
+      toast({ 
+        title: 'Return Failed', 
+        description: err?.detail || err?.message || 'Could not return asset',
+        variant: 'destructive'
+      });
+    }
   };
 
   return (
@@ -148,17 +194,28 @@ const AssetAssignment: React.FC = () => {
               </Select>
             </div>
             <div><Label>Department</Label>
-              <Select value={selectedDepartment} onValueChange={(val) => { setSelectedDepartment(val); setSelectedUser(''); }}>
+              <Select value={selectedDepartment} onValueChange={(val) => { 
+                console.log(`[AssetAssignment] Department selected: ${val}`);
+                setSelectedDepartment(val); 
+                setSelectedUser(''); 
+              }}>
                 <SelectTrigger><SelectValue placeholder="All departments" /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="all">All Departments</SelectItem>
                   {departments.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Employee *</Label>
+            <div><Label>Employee * {selectedDepartment && <span className="text-xs text-muted-foreground">({employees.length} available)</span>}</Label>
               <Select value={selectedUser} onValueChange={setSelectedUser}>
-                <SelectTrigger><SelectValue placeholder="Select employee" /></SelectTrigger>
-                <SelectContent>{employees.map(u => <SelectItem key={u.id} value={u.id}>{u.name} - {u.department}</SelectItem>)}</SelectContent>
+                <SelectTrigger><SelectValue placeholder={employees.length === 0 ? "No employees in department" : "Select employee"} /></SelectTrigger>
+                <SelectContent>
+                  {employees.length === 0 ? (
+                    <div className="p-2 text-xs text-muted-foreground">No active employees in this department</div>
+                  ) : (
+                    employees.map(u => <SelectItem key={u.id} value={u.id}>{u.name} - {u.department}</SelectItem>)
+                  )}
+                </SelectContent>
               </Select>
             </div>
           </div>

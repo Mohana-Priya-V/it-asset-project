@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { AlertTriangle, Send } from 'lucide-react';
 import { IssuePriority } from '@/data/mockData';
+import { issuesApi } from '@/services/api';
 
 const ReportIssue: React.FC = () => {
   const { currentUser } = useAuth();
@@ -23,28 +24,39 @@ const ReportIssue: React.FC = () => {
   const myAssignments = assignments.filter(a => a.userId === currentUser.id && !a.returnDate);
   const myAssets = myAssignments.map(a => assets.find(asset => asset.id === a.assetId)).filter(Boolean);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedAsset || !description.trim()) {
       toast({ title: 'Missing Fields', description: 'Please select an asset and describe the issue.', variant: 'destructive' });
       return;
     }
-    const now = new Date().toISOString().split('T')[0];
-    setRepairRequests(prev => [...prev, {
-      id: `req-${Date.now()}`,
-      assetId: selectedAsset,
-      userId: currentUser.id,
-      description: description.trim(),
-      priority,
-      status: 'pending',
-      adminRemarks: '',
-      createdAt: now,
-      updatedAt: now,
-    }]);
-    setSelectedAsset('');
-    setDescription('');
-    setPriority('medium');
-    toast({ title: 'Issue Reported', description: 'Your issue has been submitted to the admin.' });
+    
+    try {
+      const now = new Date().toISOString().split('T')[0];
+      const result = await issuesApi.create({
+        assetId: selectedAsset,
+        userId: currentUser.id,
+        description: description.trim(),
+        priority,
+        status: 'pending',
+        adminRemarks: '',
+        createdAt: now,
+        updatedAt: now
+      });
+      
+      setRepairRequests(prev => [result, ...prev]);
+      setSelectedAsset('');
+      setDescription('');
+      setPriority('medium');
+      toast({ title: 'Issue Reported', description: 'Your issue has been submitted to the admin.' });
+    } catch (err: any) {
+      console.error('[ReportIssue] Failed:', err);
+      toast({ 
+        title: 'Failed to Report Issue', 
+        description: err?.detail || err?.message || 'Could not submit your report',
+        variant: 'destructive'
+      });
+    }
   };
 
   return (

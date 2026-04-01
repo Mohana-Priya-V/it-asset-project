@@ -8,12 +8,16 @@ import { Users, Monitor, Building2, ChevronRight, ArrowLeft } from 'lucide-react
 
 const DepartmentView: React.FC = () => {
   const { users } = useAuth();
-  const { assets, departments, assignments } = useData();
+  const { assets, departments } = useData();
   const [selectedDept, setSelectedDept] = useState<string | null>(null);
 
   if (selectedDept) {
-    const deptUsers = users.filter(u => u.department === selectedDept);
-    const deptAssets = assets.filter(a => a.department === selectedDept);
+    const deptUsers = users.filter(
+      u => u.department?.trim() === selectedDept
+    );
+    const deptAssets = assets.filter(
+      a => a.department?.trim() === selectedDept
+    );
 
     return (
       <div className="space-y-6">
@@ -23,7 +27,9 @@ const DepartmentView: React.FC = () => {
           </Button>
           <div>
             <h1 className="text-2xl font-display font-bold">{selectedDept}</h1>
-            <p className="text-muted-foreground">{deptUsers.length} employees · {deptAssets.length} assets</p>
+            <p className="text-muted-foreground">
+              {deptUsers.length} employees · {deptAssets.length} assets
+            </p>
           </div>
         </div>
 
@@ -34,10 +40,16 @@ const DepartmentView: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {deptUsers.length === 0 && <p className="text-muted-foreground text-sm">No employees in this department.</p>}
+            {deptUsers.length === 0 && (
+              <p className="text-muted-foreground text-sm">
+                No employees in this department.
+              </p>
+            )}
             {deptUsers.map(u => (
               <div key={u.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted/30">
-                <div className="w-10 h-10 rounded-full gradient-bg flex items-center justify-center text-white font-semibold">{u.name.charAt(0)}</div>
+                <div className="w-10 h-10 rounded-full gradient-bg flex items-center justify-center text-white font-semibold">
+                  {u.name.charAt(0)}
+                </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{u.name}</p>
                   <p className="text-xs text-muted-foreground">{u.email}</p>
@@ -55,14 +67,20 @@ const DepartmentView: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {deptAssets.length === 0 && <p className="text-muted-foreground text-sm">No assets assigned to this department.</p>}
+            {deptAssets.length === 0 && (
+              <p className="text-muted-foreground text-sm">
+                No assets assigned to this department.
+              </p>
+            )}
             {deptAssets.map(a => (
               <div key={a.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
                 <div>
                   <p className="font-medium">{a.name}</p>
                   <p className="text-xs text-muted-foreground font-mono">{a.serialNumber}</p>
                 </div>
-                <Badge variant="secondary" className="capitalize">{a.status.replace('_', ' ')}</Badge>
+                <Badge variant="secondary" className="capitalize">
+                  {a.status.replace('_', ' ')}
+                </Badge>
               </div>
             ))}
           </CardContent>
@@ -75,13 +93,19 @@ const DepartmentView: React.FC = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-display font-bold">Departments</h1>
-        <p className="text-muted-foreground">View departments, employees, and assigned assets</p>
+        <p className="text-muted-foreground">
+          View departments, employees, and assigned assets
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {departments.map(dept => {
-          const deptUsers = users.filter(u => u.department === dept.name && u.status === 'active');
-          const deptAssets = assets.filter(a => a.department === dept.name);
+          const deptUsers = users.filter(
+            u => u.department?.trim() === dept.name && u.status === 'active'
+          );
+          const deptAssets = assets.filter(
+            a => a.department?.trim() === dept.name
+          );
 
           return (
             <Card
@@ -98,8 +122,12 @@ const DepartmentView: React.FC = () => {
                 </div>
                 <h3 className="font-display font-bold text-lg mb-2">{dept.name}</h3>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1"><Users className="w-4 h-4" /> {deptUsers.length} employees</span>
-                  <span className="flex items-center gap-1"><Monitor className="w-4 h-4" /> {deptAssets.length} assets</span>
+                  <span className="flex items-center gap-1">
+                    <Users className="w-4 h-4" /> {deptUsers.length} employees
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Monitor className="w-4 h-4" /> {deptAssets.length} assets
+                  </span>
                 </div>
               </CardContent>
             </Card>

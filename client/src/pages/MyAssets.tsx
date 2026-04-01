@@ -53,7 +53,17 @@ const MyAssets: React.FC = () => {
                   <div><span className="text-muted-foreground">Type:</span> <span className="capitalize">{asset.type}</span></div>
                   <div><span className="text-muted-foreground">Serial:</span> <span className="font-mono text-xs">{asset.serialNumber}</span></div>
                   <div><span className="text-muted-foreground">Dept:</span> {asset.department}</div>
-                  <div><span className="text-muted-foreground">Warranty:</span> {asset.warrantyExpiry}</div>
+                  <div>
+  <span className="text-muted-foreground">Warranty:</span>{' '}
+  {asset.warrantyExpiry
+    ? new Date(asset.warrantyExpiry).toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      })
+    : 'N/A'}
+</div>
+
                 </div>
                 <p className="text-xs text-muted-foreground border-t border-border/50 pt-2 mt-2">{asset.description}</p>
                 <p className="text-xs text-muted-foreground">Assigned: {(asset as any).assignedDate}</p>

@@ -2,12 +2,17 @@
 // API Service - Configure your Flask backend URL
 // ============================================
 
-// Change this to your Flask backend URL
-const API_BASE_URL = 'http://localhost:5000/api';
+// Read from VITE_API_URL environment variable (or fallback to localhost)
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // Helper for making API requests
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
+  const method = options?.method || 'GET';
+  console.log(`[API] ${method} ${url}`);
+  if (options?.body) {
+    console.log(`[API] Body:`, options.body);
+  }
   const res = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
@@ -17,11 +22,15 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   });
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: res.statusText }));
-    throw new Error(error.message || 'API request failed');
+    const errBody = await res.json().catch(() => ({ message: res.statusText }));
+    console.error(`[API] Error ${res.status}: ${JSON.stringify(errBody)}`);
+    // Throw the parsed body so callers can access error.detail or error.error
+    throw errBody;
   }
 
-  return res.json();
+  const data = await res.json();
+  console.log(`[API] Response:`, data);
+  return data;
 }
 
 // ============ AUTH / USERS ============

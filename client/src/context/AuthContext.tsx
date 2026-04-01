@@ -1,13 +1,14 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { User, initialUsers } from '@/data/mockData';
+import { usersApi } from '@/services/api';
 
 interface AuthContextType {
   currentUser: User | null;
   users: User[];
   setUsers: React.Dispatch<React.SetStateAction<User[]>>;
-  login: (email: string, password: string) => { success: boolean; message: string };
+  login: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
-  activateAccount: (email: string, password: string) => { success: boolean; message: string };
+  activateAccount: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,31 +17,84 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>(initialUsers);
 
-  const login = useCallback((email: string, password: string) => {
-    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (!user) return { success: false, message: 'User not found' };
-    if (user.status === 'inactive') return { success: false, message: 'Account is deactivated. Contact admin.' };
-    if (user.isFirstLogin) return { success: false, message: 'Please activate your account first using "First Time Login?"' };
-    if (user.password !== password) return { success: false, message: 'Invalid password' };
-    setCurrentUser(user);
-    return { success: true, message: 'Login successful' };
-  }, [users]);
+  // Fetch users from backend on mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const backendUsers = await usersApi.getAll();
+        if (backendUsers && backendUsers.length > 0) {
+          setUsers(backendUsers as User[]);
+        }
+      } catch (error) {
+        console.error('Error fetching users from backend:', error);
+        // Keep the initialUsers if backend fetch fails
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const login = useCallback(async (email: string, password: string) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        return { success: false, message: error.error || 'Login failed' };
+      }
+
+      const data = await response.json();
+      if (data.success && data.user) {
+        const user: User = {
+          id: data.user.id.toString(),
+          name: data.user.name,
+          email: data.user.email,
+          password: '', // Not stored in frontend
+          role: data.user.role as any,
+          department: data.user.department || '',
+          phone: data.user.phone || '',
+          status: data.user.status || 'active',
+          createdAt: data.user.created_at || new Date().toISOString(),
+          isFirstLogin: false
+        };
+        setCurrentUser(user);
+        return { success: true, message: 'Login successful' };
+      }
+      return { success: false, message: 'Login failed' };
+    } catch (error) {
+      console.error('Login error:', error);
+      return { success: false, message: 'Login failed' };
+    }
+  }, []);
 
   const logout = useCallback(() => {
     setCurrentUser(null);
   }, []);
 
-  const activateAccount = useCallback((email: string, password: string) => {
-    const userIndex = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
-    if (userIndex === -1) return { success: false, message: 'Email not found. Contact admin.' };
-    const user = users[userIndex];
-    if (!user.isFirstLogin) return { success: false, message: 'Account already activated. Please login.' };
+  const activateAccount = useCallback(async (email: string, password: string) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/activate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
 
-    const updated = [...users];
-    updated[userIndex] = { ...user, password, isFirstLogin: false, status: 'active' };
-    setUsers(updated);
-    return { success: true, message: 'Account activated! You can now login.' };
-  }, [users]);
+      if (!response.ok) {
+        const error = await response.json();
+        return { success: false, message: error.error || 'Activation failed' };
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Activation error:', error);
+      return { success: false, message: 'Activation failed' };
+    }
+  }, []);
 
   return (
     <AuthContext.Provider value={{ currentUser, users, setUsers, login, logout, activateAccount }}>

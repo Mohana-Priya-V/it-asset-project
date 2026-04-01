@@ -99,7 +99,16 @@ const EmployeeDashboard: React.FC = () => {
                     <Badge className="status-assigned text-xs">Assigned</Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">{asset.description}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Warranty: {asset.warrantyExpiry}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+  Warranty: {asset.warrantyExpiry 
+    ? new Date(asset.warrantyExpiry).toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      })
+    : 'N/A'}
+</p>
+
                 </div>
               ))}
             </div>
@@ -143,5 +152,4 @@ const EmployeeDashboard: React.FC = () => {
     </div>
   );
 };
-
 export default EmployeeDashboard;

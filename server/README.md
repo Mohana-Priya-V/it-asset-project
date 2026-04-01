@@ -33,3 +33,17 @@ DB_PASSWORD=changeme
 DB_NAME=itsm
 PORT=5000
 ```
+
+Data Persistence
+
+All data created in the frontend (users, assets, etc.) is persisted directly to MySQL via API calls. When you:
+- Create a user in UserManagement
+- Create an asset in AssetManagement
+- Create an issue or assignment
+
+The data is immediately saved to the MySQL database using SQLAlchemy ORM with automatic transaction commits via `engine.begin()` context manager.
+
+When the frontend reloads or the backend restarts:
+- The frontend's `DataContext` and `AuthContext` automatically fetch all data from the backend on mount
+- Previously created records are re-populated from the MySQL database
+- All state is synced with the persistent database
