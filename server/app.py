@@ -628,16 +628,22 @@ def update_issue(issue_id):
 
 
 if __name__ == '__main__':
+    port = int(os.getenv('PORT', 5000))
+    flask_env = os.getenv('FLASK_ENV', 'development')
+    debug_mode = flask_env == 'development'
+    
     print("\n" + "="*60)
     print("Flask ITSM Server Starting")
     print("="*60)
+    print(f"Environment: {flask_env}")
+    print(f"Debug Mode: {debug_mode}")
     print(f"Database Connection Details:")
     print(f"  Host: {DB_HOST}:{DB_PORT}")
     print(f"  Database: {DB_NAME}")
     print(f"  User: {DB_USER}")
     print(f"  URL: {DATABASE_URL.replace(DB_PASS, '****')}")
     print("="*60)
-    print(f"API available at: http://0.0.0.0:{os.getenv('PORT', 5000)}")
+    print(f"API available at: http://0.0.0.0:{port}")
     print("Debug connections: GET /api/debug/connection")
     print("="*60 + "\n")
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=True)
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)
