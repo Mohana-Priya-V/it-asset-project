@@ -73,6 +73,8 @@ export const usersApi = {
 export const assetsApi = {
   getAll: () => request<any[]>('/assets'),
 
+  getExpiry: () => request<any[]>('/assets/expiry/all'),
+
   create: (asset: any) =>
     request<any>('/assets', {
       method: 'POST',

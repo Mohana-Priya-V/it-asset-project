@@ -12,6 +12,7 @@ import UserManagement from "@/pages/UserManagement";
 import AssetManagement from "@/pages/AssetManagement";
 import AssetAssignment from "@/pages/AssetAssignment";
 import DepartmentView from "@/pages/DepartmentView";
+import ExpiryAlerts from "@/pages/ExpiryAlerts";
 import IssueManagement from "@/pages/IssueManagement";
 import ReportIssue from "@/pages/ReportIssue";
 import MyAssets from "@/pages/MyAssets";
@@ -37,6 +38,7 @@ const App = () => (
                 <Route path="/assets" element={<AssetManagement />} />
                 <Route path="/assignments" element={<AssetAssignment />} />
                 <Route path="/departments" element={<DepartmentView />} />
+                <Route path="/expiry-alerts" element={<ExpiryAlerts />} />
                 <Route path="/issues" element={<IssueManagement />} />
                 <Route path="/report-issue" element={<ReportIssue />} />
                 <Route path="/my-assets" element={<MyAssets />} />

@@ -4,7 +4,7 @@ import { NavLink } from '@/components/NavLink';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Monitor, ArrowLeftRight, Building2,
-  AlertTriangle, UserCircle, LogOut, ChevronLeft, ChevronRight
+  AlertTriangle, UserCircle, LogOut, ChevronLeft, ChevronRight, Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +20,7 @@ const adminLinks = [
   { to: '/assets', icon: Monitor, label: 'Assets' },
   { to: '/assignments', icon: ArrowLeftRight, label: 'Assignments' },
   { to: '/departments', icon: Building2, label: 'Departments' },
+  { to: '/expiry-alerts', icon: Clock, label: 'Expiry Alerts' },
   { to: '/issues', icon: AlertTriangle, label: 'Issues' },
   { to: '/profile', icon: UserCircle, label: 'Profile' },
 ];

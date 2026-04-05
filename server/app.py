@@ -293,6 +293,52 @@ def delete_asset(asset_id):
     return jsonify({'ok': True})
 
 
+@app.route('/api/assets/expiry/all', methods=['GET'])
+def get_expiry_alerts():
+    """
+    Fetch assets with expiry alerts (expired, critical, or warning status)
+    Only returns assets with <= 60 days remaining or already expired
+    """
+    from datetime import datetime, timedelta
+    
+    rows = fetch_all('SELECT * FROM assets ORDER BY warrantyExpiry ASC')
+    today = datetime.now().date()
+    result = []
+    
+    for row in rows:
+        if not row.get('warrantyExpiry'):
+            continue
+        
+        try:
+            warranty_date = datetime.strptime(row['warrantyExpiry'], '%Y-%m-%d').date()
+            days_left = (warranty_date - today).days
+            
+            # Determine status and only include if <= 60 days or expired
+            if days_left < 0:
+                status = 'expired'
+            elif days_left <= 30:
+                status = 'critical'
+            elif days_left <= 60:
+                status = 'warning'
+            else:
+                continue  # Skip assets with > 60 days remaining
+            
+            result.append({
+                'id': str(row.get('id')),
+                'name': row.get('name'),
+                'type': row.get('type'),
+                'serialNumber': row.get('serialNumber'),
+                'warranty': row.get('warrantyExpiry'),
+                'days_left': days_left,
+                'status': status
+            })
+        except Exception as e:
+            print(f"[get_expiry_alerts] Error processing row {row.get('id')}: {e}")
+            continue
+    
+    return jsonify(result)
+
+
 """
 Users, Departments, Assignments, Issues
 """
