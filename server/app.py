@@ -299,7 +299,7 @@ def get_expiry_alerts():
     Fetch assets with expiry alerts (expired, critical, or warning status)
     Only returns assets with <= 60 days remaining or already expired
     """
-    from datetime import datetime, timedelta
+    from datetime import datetime, timedelta, date
     
     rows = fetch_all('SELECT * FROM assets ORDER BY warrantyExpiry ASC')
     today = datetime.now().date()
@@ -310,7 +310,15 @@ def get_expiry_alerts():
             continue
         
         try:
-            warranty_date = datetime.strptime(row['warrantyExpiry'], '%Y-%m-%d').date()
+            warranty_expiry_value = row['warrantyExpiry']
+            if isinstance(warranty_expiry_value, str):
+                warranty_date = datetime.strptime(warranty_expiry_value, '%Y-%m-%d').date()
+            elif isinstance(warranty_expiry_value, date):
+                warranty_date = warranty_expiry_value
+            else:
+                print(f"[get_expiry_alerts] Invalid warrantyExpiry type for asset {row.get('id')}: {type(warranty_expiry_value)}")
+                continue
+            
             days_left = (warranty_date - today).days
             
             # Determine status and only include if <= 60 days or expired
@@ -328,7 +336,7 @@ def get_expiry_alerts():
                 'name': row.get('name'),
                 'type': row.get('type'),
                 'serialNumber': row.get('serialNumber'),
-                'warranty': row.get('warrantyExpiry'),
+                'warranty': warranty_date.strftime('%Y-%m-%d'),  # Normalize to string
                 'days_left': days_left,
                 'status': status
             })
