@@ -3,7 +3,11 @@
 // ============================================
 
 // Read from VITE_API_URL environment variable (or fallback to localhost)
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const RAW_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const CLEAN_API_URL = RAW_API_URL.replace(/\/+$|\s+/g, '');
+export const API_BASE_URL = CLEAN_API_URL.endsWith('/api')
+  ? CLEAN_API_URL
+  : `${CLEAN_API_URL}/api`;
 
 // Helper for making API requests
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
